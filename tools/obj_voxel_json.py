@@ -17,10 +17,12 @@ def convert(src, lower, upper, texture):
     if not verts or not faces: raise SystemExit("No usable faces: "+src)
     lo=[min(v[i] for v in verts) for i in range(3)]; hi=[max(v[i] for v in verts) for i in range(3)]
     dims=[hi[i]-lo[i] for i in range(3)]
-    scale=min(14/max(dims[0],1e-9),32/max(dims[1],1e-9),14/max(dims[2],1e-9))
-    off=[(16-dims[0]*scale)/2,0,(16-dims[2]*scale)/2]; occ=[set(),set()]
+    # Normalize axes independently so the machine is upright and fills nearly
+    # two blocks in height while remaining within a single-block footprint.
+    sx=14/max(dims[0],1e-9); sy=30/max(dims[1],1e-9); sz=14/max(dims[2],1e-9)
+    off=[(16-dims[0]*sx)/2,0,(16-dims[2]*sz)/2]; occ=[set(),set()]
     def put(v):
-        x=(v[0]-lo[0])*scale+off[0]; y=(v[1]-lo[1])*scale; z=(v[2]-lo[2])*scale+off[2]
+        x=(v[0]-lo[0])*sx+off[0]; y=(v[1]-lo[1])*sy; z=(v[2]-lo[2])*sz+off[2]
         if 0<=x<16 and 0<=y<32 and 0<=z<16: occ[min(1,int(y//16))].add((int(x),int(y)%16,int(z)))
     for a,b,c in faces:
         longest=max(math.dist(a,b),math.dist(b,c),math.dist(c,a))*scale
