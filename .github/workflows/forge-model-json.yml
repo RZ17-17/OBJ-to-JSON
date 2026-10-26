@@ -6,6 +6,7 @@ on:
       - 'ATM.obj'
       - 'kios jualan.obj'
       - 'tools/obj_bounds_to_block_json.py'
+      - 'tools/obj_voxel_json.py'
       - '.github/workflows/forge-model-json.yml'
 permissions:
   contents: read
@@ -20,10 +21,10 @@ jobs:
       - name: Generate Forge block model JSON files
         run: |
           mkdir -p output
-          python tools/obj_bounds_to_block_json.py "ATM.obj" output/atm.json "simplesystemshop:block/atm"
-          python tools/obj_bounds_to_block_json.py "kios jualan.obj" output/trade_kiosk.json "simplesystemshop:block/trade_kiosk"
-          python -m json.tool output/atm.json >/dev/null
-          python -m json.tool output/trade_kiosk.json >/dev/null
+          python tools/obj_voxel_json.py "ATM.obj" output/atm_lower.json output/atm_upper.json "simplesystemshop:block/atm"
+          python tools/obj_voxel_json.py "kios jualan.obj" output/trade_kiosk_lower.json output/trade_kiosk_upper.json "simplesystemshop:block/trade_kiosk"
+          python -m json.tool output/atm_lower.json >/dev/null
+          python -m json.tool output/trade_kiosk_lower.json >/dev/null
       - uses: actions/upload-artifact@v4
         with:
           name: forge-1.20.1-model-json
