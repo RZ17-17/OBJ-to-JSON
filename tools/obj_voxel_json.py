@@ -25,7 +25,9 @@ def convert(src, lower, upper, texture):
         x=(v[0]-lo[0])*sx+off[0]; y=(v[1]-lo[1])*sy; z=(v[2]-lo[2])*sz+off[2]
         if 0<=x<16 and 0<=y<32 and 0<=z<16: occ[min(1,int(y//16))].add((int(x),int(y)%16,int(z)))
     for a,b,c in faces:
-        longest=max(math.dist(a,b),math.dist(b,c),math.dist(c,a))*scale
+        def scaled(p): return ((p[0]-lo[0])*sx,(p[1]-lo[1])*sy,(p[2]-lo[2])*sz)
+        aa,bb,cc=scaled(a),scaled(b),scaled(c)
+        longest=max(math.dist(aa,bb),math.dist(bb,cc),math.dist(cc,aa))
         n=max(1,min(256,math.ceil(longest*2)))
         for i in range(n+1):
             u=i/n
