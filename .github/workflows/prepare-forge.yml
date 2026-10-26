@@ -1,0 +1,51 @@
+name: Prepare OBJ models for Forge 1.20.1
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '*.obj'
+      - 'tools/prepare_forge_obj.py'
+      - '.github/workflows/prepare-forge.yml'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Normalize and validate OBJ geometry
+        run: |
+          mkdir -p forge1201
+          python tools/prepare_forge_obj.py "ATM.obj" forge1201/atm.obj
+          python tools/prepare_forge_obj.py "kios jualan.obj" forge1201/trade_kiosk.obj
+      - name: Add Forge OBJ loader descriptors (textures intentionally pending)
+        run: |
+          cat > forge1201/atm.json <<'JSON'
+          {"loader":"forge:obj","model":"objtojson:models/atm.obj","flip_v":false,"textures":{"particle":"minecraft:block/iron_block"}}
+          JSON
+          cat > forge1201/trade_kiosk.json <<'JSON'
+          {"loader":"forge:obj","model":"objtojson:models/trade_kiosk.obj","flip_v":false,"textures":{"particle":"minecraft:block/iron_block"}}
+          JSON
+          cat > forge1201/README.txt <<'TXT'
+          Prepared for Minecraft Forge 1.20.1 using Forge's OBJ model loader.
+          atm.obj and trade_kiosk.obj preserve the source mesh and UV coordinates, with geometry normalized to fit within a 1-block footprint and 2-block height.
+          The JSON files are loader descriptors, not vanilla blockstate files. Textures and matching MTL files are intentionally not generated; add those after texture artwork is ready.
+          For use inside a mod, place OBJ files under assets/<modid>/models/ and update each JSON model path to match that mod's resource location.
+          TXT
+      - name: Publish prepared models
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add forge1201/
+          if ! git diff --cached --quiet; then
+            git commit -m "Prepare OBJ meshes for Forge 1.20.1"
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Forge-1.20.1-OBJ-models-no-textures
+          path: forge1201/
+          if-no-files-found: error
