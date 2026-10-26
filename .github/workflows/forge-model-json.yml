@@ -1,0 +1,31 @@
+name: Generate Forge 1.20.1 model JSON
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ATM.obj'
+      - 'kios jualan.obj'
+      - 'tools/obj_bounds_to_block_json.py'
+      - '.github/workflows/forge-model-json.yml'
+permissions:
+  contents: read
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate Forge block model JSON files
+        run: |
+          mkdir -p output
+          python tools/obj_bounds_to_block_json.py "ATM.obj" output/atm.json "simplesystemshop:block/atm"
+          python tools/obj_bounds_to_block_json.py "kios jualan.obj" output/trade_kiosk.json "simplesystemshop:block/trade_kiosk"
+          python -m json.tool output/atm.json >/dev/null
+          python -m json.tool output/trade_kiosk.json >/dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forge-1.20.1-model-json
+          path: output/*.json
+          if-no-files-found: error
