@@ -1,0 +1,29 @@
+name: Convert OBJ models to JSON
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '*.obj'
+      - 'tools/obj_to_json.py'
+      - '.github/workflows/convert.yml'
+permissions:
+  contents: read
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Convert both OBJ files
+        run: |
+          mkdir -p output
+          python tools/obj_to_json.py "ATM.obj" "output/ATM.json"
+          python tools/obj_to_json.py "kios jualan.obj" "output/kios jualan.json"
+      - name: Upload converted JSON files
+        uses: actions/upload-artifact@v4
+        with:
+          name: OBJ-to-JSON-meshes
+          path: output/*.json
+          if-no-files-found: error
